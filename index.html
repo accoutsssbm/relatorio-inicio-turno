@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Início de Turno - Manutenção e Operação</title>
+  <meta name="description" content="Formulário operacional para registro de início de turno, controle de preventiva e corretiva e geração do relatório DOCX padrão.">
+  
+  <!-- Estilos customizados e ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Bibliotecas para geração de DOCX local/offline -->
+  <script src="vendor/docx.umd.js"></script>
+  <script src="vendor/FileSaver.min.js"></script>
+  <!-- Fallback CDN caso vendor falhe -->
+  <script>
+    if (!window.docx) {
+      document.write('<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"><\/script>');
+    }
+    if (!window.saveAs) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- TOPO / CABEÇALHO -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="header-brand">
+        <div class="header-icon">📋</div>
+        <div>
+          <h1 class="header-title">Relatório de Início de Turno</h1>
+          <p class="header-subtitle">Gestão de frentes de manutenção preventiva, corretiva e equipe</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-outline" id="btn-load-sample" title="Preencher com os dados do modelo padrão para teste">
+          ⚡ Carregar Exemplo
+        </button>
+        <button type="button" class="btn btn-ghost" id="btn-clear-all" title="Limpar todos os campos">
+          🗑️ Limpar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BARRA DE STATUS / RASCUNHO -->
+  <div class="container draft-bar">
+    <span id="draft-status" class="draft-indicator">💾 Rascunho salvo automaticamente</span>
+    <span class="badge-version">Modelo Word Homologado</span>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="container main-layout">
+    
+    <!-- COLUNA DO FORMULÁRIO -->
+    <section class="form-column">
+      <form id="shift-form" autocomplete="off">
+
+        <!-- 1. DADOS GERAIS DO TURNO -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-number">1</span>
+            <h2>Identificação Geral do Turno</h2>
+          </div>
+          <div class="grid grid-3">
+            <div class="form-group">
+              <label for="field-frota">Frota <span class="required">*</span></label>
+              <input type="text" id="field-frota" list="frota-suggestions" placeholder="Ex: Transporte GP" value="Transporte GP" required>
+              <datalist id="frota-suggestions">
+                <option value="Transporte GP">
+                <option value="Perfuratriz">
+                <option value="Escavação">
+                <option value="Carga e Transporte">
+                <option value="Infraestrutura">
+                <option value="Apoio">
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="field-turma">Turma <span class="required">*</span></label>
+              <input type="text" id="field-turma" list="turma-suggestions" placeholder="Ex: A" value="A" required>
+              <datalist id="turma-suggestions">
+                <option value="A">
+                <option value="B">
+                <option value="C">
+                <option value="D">
+                <option value="Turno 1">
+                <option value="Turno 2">
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="field-data">Data do Turno <span class="required">*</span></label>
+              <input type="text" id="field-data" placeholder="DD/MM/AAAA" value="29/10/2026" required>
+            </div>
+          </div>
+
+          <div class="grid grid-3 mt-3">
+            <div class="form-group">
+              <label for="field-supervisor">Supervisor <span class="required">*</span></label>
+              <input type="text" id="field-supervisor" placeholder="Nome do supervisor" value="Felipe Fontes" required>
+            </div>
+            <div class="form-group">
+              <label for="field-tec-prev">Técnico Preventiva</label>
+              <input type="text" id="field-tec-prev" placeholder="Nome do responsável" value="Rocha">
+            </div>
+            <div class="form-group">
+              <label for="field-tec-corr">Técnico Corretiva</label>
+              <input type="text" id="field-tec-corr" placeholder="Nome do responsável" value="Mário Barbosa">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. STATUS E INDICADORES DO TURNO -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-number">2</span>
+            <h2>Resumo Operacional e Segurança</h2>
+          </div>
+          <p class="card-hint">Os contadores de Preventiva e Corretiva atualizam automaticamente conforme os equipamentos adicionados, mas você pode ajustá-los livremente.</p>
+          <div class="grid grid-3 indicators-grid">
+            <div class="indicator-card indicator-blue">
+              <div class="indicator-label">🔵 Preventiva</div>
+              <input type="number" id="field-qtd-prev" min="0" value="2" class="indicator-input">
+            </div>
+            <div class="indicator-card indicator-yellow">
+              <div class="indicator-label">🟡 Corretiva</div>
+              <input type="number" id="field-qtd-corr" min="0" value="1" class="indicator-input">
+            </div>
+            <div class="indicator-card indicator-red">
+              <div class="indicator-label">🔴 Acidente</div>
+              <input type="number" id="field-qtd-acid" min="0" value="0" class="indicator-input">
+            </div>
+          </div>
+
+          <div class="form-group mt-4">
+            <label for="field-seguranca">⚠️ Segurança / Meio Ambiente</label>
+            <input type="text" id="field-seguranca" placeholder="Observações de segurança ou deixe em branco se não houver ocorrências" value="">
+          </div>
+        </div>
+
+        <!-- 3. EQUIPAMENTOS EM PREVENTIVA -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-number badge-blue">3</span>
+              <h2>🔵 Equipamentos em Manutenção Preventiva</h2>
+            </div>
+            <button type="button" class="btn btn-sm btn-blue" id="btn-add-prev">
+              + Adicionar Equipamento
+            </button>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="field-escopo-prev">Frentes / Escopo da Manutenção</label>
+            <input type="text" id="field-escopo-prev" placeholder="Ex: GP / Perfuratriz / Escavação" value="GP / Perfuratriz / Escavação">
+          </div>
+
+          <div id="container-preventivas" class="items-container">
+            <!-- Cards de Preventiva inseridos via JS -->
+          </div>
+        </div>
+
+        <!-- 4. EQUIPAMENTOS EM CORRETIVA -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-number badge-yellow">4</span>
+              <h2>🟡 Equipamentos em Corretiva</h2>
+            </div>
+            <button type="button" class="btn btn-sm btn-yellow" id="btn-add-corr">
+              + Adicionar Equipamento
+            </button>
+          </div>
+
+          <div id="container-corretivas" class="items-container">
+            <!-- Cards de Corretiva inseridos via JS -->
+          </div>
+        </div>
+
+        <!-- 5. AUSÊNCIAS DA EQUIPE -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-number">5</span>
+              <h2>👥 Ausentes</h2>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="btn-add-ausente">
+              + Adicionar Ausente
+            </button>
+          </div>
+
+          <div id="container-ausentes" class="items-container">
+            <!-- Linhas de Ausentes inseridas via JS -->
+          </div>
+        </div>
+
+        <!-- 6. PONTOS DE ATENÇÃO -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div class="flex-align">
+              <span class="card-number">6</span>
+              <h2>⚠️ Pontos de Atenção</h2>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="btn-add-atencao">
+              + Adicionar Ponto
+            </button>
+          </div>
+
+          <div id="container-atencao" class="items-container">
+            <!-- Linhas de Pontos de Atenção inseridas via JS -->
+          </div>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- COLUNA DE PRÉVIA E EXPORTAÇÃO -->
+    <aside class="preview-column">
+      <div class="sticky-preview">
+        
+        <div class="card preview-card">
+          <div class="card-header flex-between">
+            <h2>Pré-Visualização do Relatório</h2>
+            <span class="preview-tag">Ao Vivo</span>
+          </div>
+
+          <!-- AÇÕES DE EXPORTAÇÃO EM DESTAQUE -->
+          <div class="export-actions">
+            <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-download-docx">
+              <span class="btn-icon">📄</span> Baixar Arquivo (.DOCX)
+            </button>
+            <div class="grid grid-2 mt-2">
+              <button type="button" class="btn btn-success btn-block" id="btn-copy-whatsapp">
+                <span class="btn-icon">💬</span> Copiar p/ WhatsApp
+              </button>
+              <button type="button" class="btn btn-secondary btn-block" id="btn-print-report">
+                <span class="btn-icon">🖨️</span> Imprimir / PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- MENSAGEM DE ALERTA/SUCESSO DE CÓPIA -->
+          <div id="copy-toast" class="toast hidden">
+            ✅ Texto formatado copiado para a área de transferência!
+          </div>
+
+          <!-- CAIXA DE TEXTO COM O RESULTADO FORMATADO -->
+          <div class="preview-content-box">
+            <pre id="preview-text" class="preview-text"></pre>
+          </div>
+
+          <div class="preview-footer">
+            <small>💡 O arquivo <strong>.DOCX</strong> gerado segue rigorosamente o modelo homologado de início de turno da área.</small>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <p>Relatório de Início de Turno • Versão Web Standalone</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
