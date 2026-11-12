@@ -46,14 +46,6 @@ const MODELO_PADRAO = {
       previsaoLiberacao: "Em diagnostico"
     }
   ],
-  ausentes: [
-    { id: "aus_1", nome: "Junior (Vale)", motivo: "Férias" },
-    { id: "aus_2", nome: "Deibety (Vale)", motivo: "Ausência Justificada" },
-    { id: "aus_3", nome: "Júnior (Vale)", motivo: "Férias" },
-    { id: "aus_4", nome: "Paulo (Vale)", motivo: "Exame Periódico" },
-    { id: "aus_5", nome: "Deibety (Vale)", motivo: "Exame Periódico" },
-    { id: "aus_6", nome: "Junior (Vale)", motivo: "Férias" }
-  ],
   pontosAtencao: [
     { id: "pt_1", texto: "Sem comboio para abastecer CM4054 no Box" },
     { id: "pt_2", texto: "Sem caminhão Munck disponível" },
@@ -79,7 +71,6 @@ const dom = {
   escopoPrev: document.getElementById('field-escopo-prev'),
   containerPreventivas: document.getElementById('container-preventivas'),
   containerCorretivas: document.getElementById('container-corretivas'),
-  containerAusentes: document.getElementById('container-ausentes'),
   containerAtencao: document.getElementById('container-atencao'),
   previewText: document.getElementById('preview-text'),
   draftStatus: document.getElementById('draft-status'),
@@ -88,7 +79,6 @@ const dom = {
   btnClearAll: document.getElementById('btn-clear-all'),
   btnAddPrev: document.getElementById('btn-add-prev'),
   btnAddCorr: document.getElementById('btn-add-corr'),
-  btnAddAusente: document.getElementById('btn-add-ausente'),
   btnAddAtencao: document.getElementById('btn-add-atencao'),
   btnDownloadDocx: document.getElementById('btn-download-docx'),
   btnCopyWhatsapp: document.getElementById('btn-copy-whatsapp'),
@@ -166,7 +156,6 @@ function saveDraft() {
 function renderDynamicLists() {
   renderPreventivas();
   renderCorretivas();
-  renderAusentes();
   renderAtencao();
 }
 
@@ -282,31 +271,7 @@ function renderCorretivas() {
   });
 }
 
-// 3. Ausentes
-function renderAusentes() {
-  dom.containerAusentes.innerHTML = '';
-  appState.ausentes.forEach((item, index) => {
-    const row = document.createElement('div');
-    row.className = 'grid grid-2 mb-2 item-card';
-    row.style.padding = '10px 14px';
-    row.innerHTML = `
-      <div class="form-group">
-        <label>Colaborador (Empresa)</label>
-        <input type="text" value="${escapeHtml(item.nome)}" placeholder="Ex: Junior (Vale)" oninput="updateAusenteField('${item.id}', 'nome', this.value)">
-      </div>
-      <div class="form-group" style="position: relative;">
-        <label>Motivo</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" value="${escapeHtml(item.motivo)}" placeholder="Ex: Férias, Exame Periódico..." oninput="updateAusenteField('${item.id}', 'motivo', this.value)">
-          <button type="button" class="btn-remove-item" title="Remover" onclick="removeAusente('${item.id}')">✕</button>
-        </div>
-      </div>
-    `;
-    dom.containerAusentes.appendChild(row);
-  });
-}
-
-// 4. Pontos de Atenção
+// 3. Pontos de Atenção
 function renderAtencao() {
   dom.containerAtencao.innerHTML = '';
   appState.pontosAtencao.forEach((item, index) => {
@@ -369,22 +334,6 @@ window.removeCorretiva = function(id) {
   dom.qtdCorr.value = appState.corretivas.length;
   appState.qtdCorr = appState.corretivas.length;
   renderCorretivas();
-  saveDraft();
-  updatePreview();
-};
-
-window.updateAusenteField = function(id, field, value) {
-  const item = appState.ausentes.find(a => a.id === id);
-  if (item) {
-    item[field] = value;
-    saveDraft();
-    updatePreview();
-  }
-};
-
-window.removeAusente = function(id) {
-  appState.ausentes = appState.ausentes.filter(a => a.id !== id);
-  renderAusentes();
   saveDraft();
   updatePreview();
 };
@@ -458,18 +407,6 @@ function bindEvents() {
     updatePreview();
   });
 
-  dom.btnAddAusente.addEventListener('click', () => {
-    const newId = 'aus_' + Date.now();
-    appState.ausentes.push({
-      id: newId,
-      nome: "",
-      motivo: ""
-    });
-    renderAusentes();
-    saveDraft();
-    updatePreview();
-  });
-
   dom.btnAddAtencao.addEventListener('click', () => {
     const newId = 'pt_' + Date.now();
     appState.pontosAtencao.push({
@@ -509,7 +446,6 @@ function bindEvents() {
         escopoPrev: "",
         preventivas: [],
         corretivas: [],
-        ausentes: [],
         pontosAtencao: []
       };
       syncStateToInputs();
@@ -580,14 +516,6 @@ function buildFormattedText() {
       lines.push(``);
     });
   }
-
-  lines.push(`Ausentes:`);
-  if (appState.ausentes && appState.ausentes.length > 0) {
-    appState.ausentes.forEach(a => {
-      lines.push(`${a.nome} - ${a.motivo}`);
-    });
-  }
-  lines.push(``);
 
   lines.push(`Pontos de atenção:`);
   lines.push(``);
@@ -755,28 +683,7 @@ async function generateDocx() {
     });
   }
 
-  // 7. Ausentes
-  children.push(new Paragraph({
-    children: [
-      new TextRun({ text: "Ausentes:", bold: true, size: 22, font: "Calibri" })
-    ],
-    spacing: { after: 120 }
-  }));
-
-  if (appState.ausentes && appState.ausentes.length > 0) {
-    appState.ausentes.forEach(a => {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: `${a.nome} - ${a.motivo}`, size: 22, font: "Calibri" })
-        ],
-        spacing: { after: 80 }
-      }));
-    });
-  }
-
-  children.push(makeBlankParagraph());
-
-  // 8. Pontos de Atenção
+  // 7. Pontos de Atenção
   children.push(new Paragraph({
     children: [
       new TextRun({ text: "Pontos de atenção:", bold: true, size: 22, font: "Calibri" })
