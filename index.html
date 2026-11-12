@@ -11,6 +11,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Navegação entre relatórios — independente do formulário existente */
+    .report-tabs { background: #fff; border-bottom: 1px solid var(--border-color); }
+    .report-tabs-inner { display: flex; align-items: flex-end; gap: 8px; padding-top: 12px; }
+    .report-tab { appearance: none; border: 0; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; background: transparent; color: var(--text-muted); padding: 12px 20px; font: inherit; font-weight: 600; cursor: pointer; }
+    .report-tab:hover { background: var(--bg-page); color: var(--text-main); }
+    .report-tab[aria-pressed="true"] { background: var(--primary-light); color: var(--primary); border-bottom-color: var(--primary); }
+    .report-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .report-fim { padding-top: 24px; }
+    .report-fim .card { max-width: 760px; margin: 0 auto; }
+    .report-fim h2 { margin-bottom: 8px; }
+    .report-fim p { color: var(--text-muted); }
+    @media print { .report-tabs, #panel-fim { display: none !important; } }
+    @media (max-width: 480px) { .report-tab { flex: 1; padding: 12px 8px; font-size: 13px; } }
+  </style>
 
   <!-- Bibliotecas para geração de DOCX local/offline -->
   <script src="vendor/docx.umd.js"></script>
@@ -26,6 +41,15 @@
   </script>
 </head>
 <body>
+
+  <nav class="report-tabs" aria-label="Navegação entre relatórios">
+    <div class="container report-tabs-inner">
+      <button type="button" id="tab-inicio" class="report-tab" aria-pressed="true" aria-controls="panel-inicio">Início de Turno</button>
+      <button type="button" id="tab-fim" class="report-tab" aria-pressed="false" aria-controls="panel-fim">Fim de Turno</button>
+    </div>
+  </nav>
+
+  <div id="panel-inicio" aria-labelledby="tab-inicio">
 
   <!-- TOPO / CABEÇALHO -->
   <header class="app-header">
@@ -251,7 +275,39 @@
       <p>Relatório de Início de Turno • Versão Web Standalone</p>
     </div>
   </footer>
+  </div>
+
+  <section id="panel-fim" class="container report-fim" aria-labelledby="tab-fim" hidden>
+    <div class="card">
+      <h2>Relatório de Fim de Turno</h2>
+      <p>Em desenvolvimento. O formulário de fim de turno será criado em uma próxima etapa.</p>
+    </div>
+  </section>
 
   <script src="app.js"></script>
+
+  <script>
+    // Somente alterna a visualização; não altera o estado nem os dados de início de turno.
+    (function () {
+      const inicio = document.getElementById('panel-inicio');
+      const fim = document.getElementById('panel-fim');
+      const btnInicio = document.getElementById('tab-inicio');
+      const btnFim = document.getElementById('tab-fim');
+
+      function selecionarAba(aba) {
+        const mostrarInicio = aba === 'inicio';
+        inicio.hidden = !mostrarInicio;
+        fim.hidden = mostrarInicio;
+        btnInicio.setAttribute('aria-pressed', String(mostrarInicio));
+        btnFim.setAttribute('aria-pressed', String(!mostrarInicio));
+        document.title = mostrarInicio
+          ? 'Relatório de Início de Turno - Manutenção e Operação'
+          : 'Relatório de Fim de Turno - Em desenvolvimento';
+      }
+
+      btnInicio.addEventListener('click', function () { selecionarAba('inicio'); });
+      btnFim.addEventListener('click', function () { selecionarAba('fim'); });
+    })();
+  </script>
 </body>
 </html>
