@@ -170,11 +170,32 @@ function renderDynamicLists() {
   renderAtencao();
 }
 
+// Preserva rascunhos antigos que armazenavam toda a equipe em um único campo.
+function getPreventivaEquipeCampos(item) {
+  if (Array.isArray(item.equipeCampos)) {
+    return Array.from({ length: 5 }, (_, i) => String(item.equipeCampos[i] || ''));
+  }
+  const antigos = String(item.equipe || '')
+    .split(/,\s*|\s+e\s+/i)
+    .map(nome => nome.trim())
+    .filter(Boolean);
+  return Array.from({ length: 5 }, (_, i) =>
+    i === 4 ? antigos.slice(4).join(', ') : (antigos[i] || '')
+  );
+}
+
+function getPreventivaEquipeTexto(item) {
+  return Array.isArray(item.equipeCampos)
+    ? item.equipeCampos.map(nome => String(nome || '').trim()).filter(Boolean).join(', ')
+    : (item.equipe || '');
+}
+
 // 1. Preventivas
 function renderPreventivas() {
   dom.containerPreventivas.innerHTML = '';
   appState.preventivas.forEach((item, index) => {
     const card = document.createElement('div');
+    const equipeCampos = getPreventivaEquipeCampos(item);
     card.className = 'item-card card-prev';
     card.innerHTML = `
       <div class="item-header">
@@ -197,7 +218,14 @@ function renderPreventivas() {
       </div>
       <div class="form-group mb-2">
         <label>Equipe</label>
-        <input type="text" value="${escapeHtml(item.equipe)}" placeholder="Ex: Fenelon, Guilherme..." oninput="updatePreventivaField('${item.id}', 'equipe', this.value)">
+        <div class="grid grid-2">
+          ${equipeCampos.map((nome, pos) => `
+            <div class="form-group">
+              <label for="prev-equipe-${item.id}-${pos}">Integrante ${pos + 1}</label>
+              <input id="prev-equipe-${item.id}-${pos}" type="text" value="${escapeHtml(nome)}" placeholder="Nome" oninput="updatePreventivaEquipe('${item.id}', ${pos}, this.value)">
+            </div>
+          `).join('')}
+        </div>
       </div>
       <div class="grid grid-2">
         <div class="form-group">
@@ -299,6 +327,16 @@ function renderAtencao() {
 // ==========================================
 // FUNÇÕES DE MANIPULAÇÃO DINÂMICA
 // ==========================================
+window.updatePreventivaEquipe = function(id, pos, value) {
+  const item = appState.preventivas.find(p => p.id === id);
+  if (!item || pos < 0 || pos > 4) return;
+  item.equipeCampos = getPreventivaEquipeCampos(item);
+  item.equipeCampos[pos] = value;
+  item.equipe = getPreventivaEquipeTexto(item);
+  saveDraft();
+  updatePreview();
+};
+
 window.updatePreventivaField = function(id, field, value) {
   const item = appState.preventivas.find(p => p.id === id);
   if (item) {
@@ -391,6 +429,7 @@ function bindEvents() {
       tag: "",
       atividades: "",
       equipe: "",
+      equipeCampos: ["", "", "", "", ""],
       tempoProgramado: "",
       dataParada: "",
       previsaoLiberacao: ""
@@ -520,7 +559,7 @@ function buildFormattedText() {
     appState.preventivas.forEach(p => {
       lines.push(`TAG: ${p.tag}`);
       lines.push(`Atividades: ${p.atividades}`);
-      lines.push(`Equipe: ${p.equipe}`);
+      lines.push(`Equipe: ${getPreventivaEquipeTexto(p)}`);
       lines.push(`Tempo programado: ${p.tempoProgramado}`);
       lines.push(`Data da Parada: ${p.dataParada}`);
       lines.push(`Previsão Liberação: ${p.previsaoLiberacao}`);
@@ -687,7 +726,7 @@ async function generateDocx() {
     appState.preventivas.forEach(p => {
       children.push(makeKvParagraph("TAG:", p.tag));
       children.push(makeKvParagraph("Atividades:", p.atividades));
-      children.push(makeKvParagraph("Equipe:", p.equipe));
+      children.push(makeKvParagraph("Equipe:", getPreventivaEquipeTexto(p)));
       children.push(makeKvParagraph("Tempo programado:", p.tempoProgramado));
       children.push(makeKvParagraph("Data da Parada:", p.dataParada));
       children.push(makeKvParagraph("Previsão Liberação:", p.previsaoLiberacao));
