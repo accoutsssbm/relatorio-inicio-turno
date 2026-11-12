@@ -30,6 +30,27 @@
     #panel-fim .app-header { margin-bottom: 0; }
     #panel-fim .report-fim-status { color: var(--text-muted); }
     #panel-fim[hidden], #panel-inicio[hidden] { display: none !important; }
+    /* Campo de data com calendário nativo, sem perder a digitação de data/hora */
+    .campo-com-calendario { display: flex; position: relative; width: 100%; min-width: 0; }
+    .campo-com-calendario > input[type="text"] {
+      flex: 1; width: 100%; min-width: 0; border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    }
+    .botao-calendario {
+      width: 42px; min-width: 42px; display: inline-flex; align-items: center;
+      justify-content: center; border: 1px solid var(--border-color);
+      border-left: none; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      background: #f8fafc; color: var(--text-muted); cursor: pointer;
+    }
+    .botao-calendario:hover { color: var(--primary); background: var(--primary-light); }
+    .botao-calendario:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+    .campo-com-calendario > .seletor-calendario-nativo {
+      position: absolute; top: 0; right: 0; width: 1px !important; height: 1px !important;
+      padding: 0 !important; border: 0 !important; opacity: 0; pointer-events: none;
+    }
+    .campo-com-calendario > .seletor-calendario-alternativo {
+      width: 42px !important; height: 100% !important;
+      opacity: 0; z-index: 2; pointer-events: auto; cursor: pointer;
+    }
     @media print {
       .report-tabs, #panel-fim .app-header, #panel-fim .draft-bar, #panel-fim .form-column, #panel-fim .app-footer { display:none !important; }
       #panel-fim:not([hidden]) { display:block !important; padding:0 !important; }
@@ -292,6 +313,7 @@
 
   <script src="app.js"></script>
   <script src="fim-turno.js"></script>
+  <script src="calendarios.js"></script>
 
   <script>
     // Somente alterna a visualização; não altera o estado nem os dados de início de turno.
