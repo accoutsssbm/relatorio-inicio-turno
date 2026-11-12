@@ -535,8 +535,44 @@ function updatePreview() {
   }
 }
 
+
+function formatarTextoParaWhatsApp(texto) {
+  const titulos = new Set([
+    'Relatório de início de turno',
+    'Relatório de Final de Turno',
+    '🟡Equipamentos em Corretiva:',
+    '🟢Equipamento Liberado no Turno',
+    'Pontos de atenção:',
+    'Principais Atividades Executadas no turno:',
+    'Principais Atividades Executadas:',
+    'Desvios durante o turno:',
+    'Desvios:',
+    'Pendências para o próximo turno:',
+    'Descrição Atividade:',
+    'Descrição da falha:',
+    'Correção da falha:'
+  ]);
+  const campos = new Set([
+    'Frota', 'Turma', 'Supervisor', 'Técnico Preventiva',
+    'Técnico Corretiva', 'Data',
+    '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
+    '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
+    '🔵Equipamento em Manutenção Preventiva',
+    'TAG', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
+    'Data da Parada', 'Previsão Liberação', 'Falha', 'Liberação'
+  ]);
+  return texto.split('\n').map(linha => {
+    if (titulos.has(linha.trim())) return '*' + linha + '*';
+    const pos = linha.indexOf(':');
+    if (pos >= 0 && campos.has(linha.slice(0, pos).trim())) {
+      return '*' + linha.slice(0, pos + 1) + '*' + linha.slice(pos + 1);
+    }
+    return linha;
+  }).join('\n');
+}
+
 function copyFormattedText() {
-  const text = buildFormattedText();
+  const text = formatarTextoParaWhatsApp(buildFormattedText());
   navigator.clipboard.writeText(text).then(() => {
     dom.copyToast.classList.remove('hidden');
     setTimeout(() => {
