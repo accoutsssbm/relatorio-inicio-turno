@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Compatibilizar os rascunhos antigos com as opções fechadas de frota.
   appState.frota = normalizarFrotaTurno(appState.frota);
   appState.escopoPrev = normalizarFrotaTurno(appState.escopoPrev);
+  appState.turma = normalizarTurno(appState.turma);
 
   // Preencher formulário
   syncStateToInputs();
@@ -114,6 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // SINCRONIZAÇÃO DE ESTADO E INPUTS
 // ==========================================
+function normalizarTurno(value) {
+  const turno = String(value || '').trim().toUpperCase();
+  return ['A', 'B', 'C', 'D'].includes(turno) ? turno : '';
+}
+
 function normalizarFrotaTurno(value) {
   const texto = String(value || '').trim();
   if (texto === 'Escavação/Perfuratriz') return 'Escavação/Perfuração';
@@ -486,7 +492,7 @@ function buildFormattedText() {
 
   lines.push(`Relatório de início de turno`);
   lines.push(`Frota: ${appState.frota}`);
-  lines.push(`Turma: ${appState.turma}`);
+  lines.push(`TURNO: ${appState.turma}`);
   lines.push(`Supervisor: ${appState.supervisor}`);
   lines.push(`Técnico Preventiva: ${appState.tecPrev}`);
   lines.push(`Técnico Corretiva: ${appState.tecCorr}`);
@@ -563,7 +569,7 @@ function formatarTextoParaWhatsApp(texto) {
     'Correção da falha:'
   ]);
   const campos = new Set([
-    'Frota', 'Turma', 'Supervisor', 'Técnico Preventiva',
+    'Frota', 'TURNO', 'Supervisor', 'Técnico Preventiva',
     'Técnico Corretiva', 'Data',
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
@@ -636,7 +642,7 @@ async function generateDocx() {
 
   // 2. Cabeçalho Geral
   children.push(makeKvParagraph("Frota:", appState.frota));
-  children.push(makeKvParagraph("Turma:", appState.turma));
+  children.push(makeKvParagraph("TURNO:", appState.turma));
   children.push(makeKvParagraph("Supervisor:", appState.supervisor));
   children.push(makeKvParagraph("Técnico Preventiva:", appState.tecPrev));
   children.push(makeKvParagraph("Técnico Corretiva:", appState.tecCorr));
