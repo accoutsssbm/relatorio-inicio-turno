@@ -20,6 +20,7 @@ const MODELO_PADRAO = {
     {
       id: "prev_1",
       tag: "CM4050",
+      ordem: "",
       atividades: "MP 500hs / Franzen / Analub / Automação / Subst. cuica / Suporte do reboque / Backlog`s (Linha 01)",
       equipe: "Fenelon, Guilherme, Carlos e Zé Maria",
       tempoProgramado: "36horas",
@@ -29,6 +30,7 @@ const MODELO_PADRAO = {
     {
       id: "prev_2",
       tag: "CM4054",
+      ordem: "",
       atividades: "MP1000hs / Franzen / Analub / Backlog`s / Automação / Regulagem de válvulas / Backlogs (Linha 02)",
       equipe: "Samuel, Marcos, Djair e Joel",
       tempoProgramado: "48horas",
@@ -207,10 +209,14 @@ function renderPreventivas() {
         <span class="item-tag-title">🔵 Item #${index + 1} - ${item.tag || 'Novo TAG'}</span>
         <button type="button" class="btn-remove-item" title="Remover este equipamento" onclick="removePreventiva('${item.id}')">✕</button>
       </div>
-      <div class="grid grid-2 mb-2">
+      <div class="grid grid-3 mb-2">
         <div class="form-group">
           <label>TAG <span class="required">*</span></label>
           <input type="text" required value="${escapeHtml(item.tag)}" placeholder="Ex: CM4050" oninput="updatePreventivaField('${item.id}', 'tag', this.value)">
+        </div>
+        <div class="form-group">
+          <label>OM <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.ordem || '')}" placeholder="Número da OM" oninput="updatePreventivaField('${item.id}', 'ordem', this.value)">
         </div>
         <div class="form-group">
           <label>Tempo Programado</label>
@@ -406,6 +412,7 @@ function bindEvents() {
     appState.preventivas.push({
       id: newId,
       tag: "",
+      ordem: "",
       atividades: "",
       equipe: "",
       equipeCampos: ["", "", "", "", ""],
@@ -525,6 +532,7 @@ function buildFormattedText() {
   if (appState.preventivas && appState.preventivas.length > 0) {
     appState.preventivas.forEach(p => {
       lines.push(`TAG: ${p.tag}`);
+      lines.push(`OM: ${p.ordem || ""}`);
       lines.push(`Atividades: ${p.atividades}`);
       lines.push(`Equipe: ${getPreventivaEquipeTexto(p)}`);
       lines.push(`Tempo programado: ${p.tempoProgramado}`);
@@ -589,7 +597,7 @@ function formatarTextoParaWhatsApp(texto) {
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
     '🔵Equipamento em Manutenção Preventiva',
-    'TAG', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
+    'TAG', 'OM', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
     'Data da Parada', 'Previsão Liberação', 'Falha', 'Liberação'
   ]);
   return texto.split('\n').map(linha => {
@@ -722,6 +730,7 @@ async function generateDocx() {
   if (appState.preventivas && appState.preventivas.length > 0) {
     appState.preventivas.forEach(p => {
       children.push(makeKvParagraph("TAG:", p.tag));
+      children.push(makeKvParagraph("OM:", p.ordem || ""));
       children.push(makeKvParagraph("Atividades:", p.atividades));
       children.push(makeKvParagraph("Equipe:", getPreventivaEquipeTexto(p)));
       children.push(makeKvParagraph("Tempo programado:", p.tempoProgramado));
