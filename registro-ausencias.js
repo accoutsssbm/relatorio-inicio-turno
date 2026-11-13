@@ -100,6 +100,8 @@
   }
 
   function reset() {
+    // Remove apenas as opções temporárias usadas por registros antigos.
+    fields.observacao.querySelectorAll('option[data-legacy="true"]').forEach(option => option.remove());
     form.reset();
     editingId = null;
     submit.textContent = "Salvar registro";
@@ -144,6 +146,16 @@
       const item = registros.find(x => x.id === edit.dataset.edit);
       if (!item) return;
       editingId = item.id;
+      // Registros anteriores podiam conter observações livres.
+      // Preserva o valor original durante a edição, sem acrescentá-lo à lista fixa.
+      fields.observacao.querySelectorAll('option[data-legacy="true"]').forEach(option => option.remove());
+      if (item.observacao && !Array.from(fields.observacao.options).some(option => option.value === item.observacao)) {
+        const legacyOption = document.createElement("option");
+        legacyOption.value = item.observacao;
+        legacyOption.textContent = item.observacao + " (registro anterior)";
+        legacyOption.dataset.legacy = "true";
+        fields.observacao.appendChild(legacyOption);
+      }
       Object.keys(fields).forEach(k => { fields[k].value = item[k] || ""; });
       submit.textContent = "Salvar alterações";
       cancel.hidden = false;
