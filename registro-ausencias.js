@@ -11,6 +11,7 @@
   const message = document.getElementById("ausencias-mensagem");
   const submit = document.getElementById("ausencias-salvar");
   const cancel = document.getElementById("ausencias-cancelar");
+  const exportButton = document.getElementById("ausencias-exportar-pdf");
   const fields = {
     nome: document.getElementById("ausencia-nome"),
     frota: document.getElementById("ausencia-frota"),
@@ -76,6 +77,7 @@
   }
 
   function render() {
+    exportButton.disabled = registros.length === 0;
     count.textContent = registros.length + (registros.length === 1 ? " registro" : " registros");
     if (!registros.length) {
       list.innerHTML = '<p class="ausencias-vazio">Nenhuma ausência registrada.</p>';
@@ -157,6 +159,156 @@
     }
   });
 
+
+  // Um único PDF, abrangendo todos os registros atualmente salvos na relação.
+  function gerarPdfRelacao(items) {
+    const Ctor = window.jspdf && window.jspdf.jsPDF;
+    if (typeof Ctor !== "function") {
+      throw new Error("A biblioteca de PDF não foi carregada.");
+    }
+
+    const pdf = new Ctor({ orientation: "portrait", unit: "mm", format: "a4" });
+    const left = 16;
+    const right = 194;
+    const printableWidth = right - left;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const bottom = pageHeight - 20;
+    let y = 25;
+
+    function novoCabecalho(continuacao) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text("Registro de Ausências" + (continuacao ? " - continuação" : ""), left, 17);
+      pdf.setDrawColor(205, 210, 215);
+      pdf.line(left, 19, right, 19);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+    }
+
+    function espaco(altura) {
+      if (y + altura > bottom) {
+        pdf.addPage();
+        y = 27;
+        novoCabecalho(true);
+      }
+    }
+
+    function linha(label, value) {
+      const content = String(value == null || value === "" ? "—" : value)
+        .replace(/\r/g, "").replace(/\t/g, "    ").replace(/\u0000/g, "");
+      const paragraphs = content.split("\n");
+      paragraphs.forEach((paragraph, index) => {
+        const head = index === 0 ? label + ": " : "";
+        const wrapped = pdf.splitTextToSize(head + (paragraph || (index === 0 ? "—" : "")), printableWidth);
+        wrapped.forEach((part) => {
+          espaco(5.3);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9.5);
+          pdf.text(part, left, y);
+          y += 5.3;
+        });
+      });
+    }
+
+    novoCabecalho(false);
+    const geradoEm = new Date().toLocaleString("pt-BR");
+    linha("Gerado em", geradoEm);
+    linha("Total de registros", items.length);
+    y += 5;
+
+    const ordered = [...items].sort((a, b) =>
+      b.data.localeCompare(a.data) || (b.criadoEm || "").localeCompare(a.criadoEm || ""));
+
+    ordered.forEach((item, index) => {
+      espaco(16);
+      pdf.setDrawColor(224, 228, 232);
+      pdf.line(left, y - 2.5, right, y - 2.5);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      pdf.text("Registro " + (index + 1), left, y + 2);
+      y += 9;
+      linha("Data", displayDate(item.data));
+      linha("Colaborador", item.nome);
+      linha("Frota", item.frota);
+      linha("Turma", item.turma);
+      linha("Observação", item.observacao);
+      y += 7;
+    });
+
+    const totalPaginas = pdf.internal.getNumberOfPages();
+    for (let page = 1; page <= totalPaginas; page++) {
+      pdf.setPage(page);
+      pdf.setDrawColor(225, 228, 231);
+      pdf.line(left, pageHeight - 14, right, pageHeight - 14);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      pdf.text("Página " + page + " de " + totalPaginas, right, pageHeight - 9, { align: "right" });
+    }
+
+    const blob = pdf.output("blob");
+    if (!blob || !blob.size || blob.type !== "application/pdf") {
+      throw new Error("O PDF gerado não é válido.");
+    }
+    return blob;
+  }
+
+  function iniciarDownload(blob, filename) {
+    if (!window.URL || typeof window.URL.createObjectURL !== "function") {
+      throw new Error("Este navegador não permite iniciar o download.");
+    }
+    const url = window.URL.createObjectURL(blob);
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+      }
+    } finally {
+      setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    }
+  }
+
+  function exportarELimpar() {
+    if (!registros.length) {
+      showMessage("Não há registros para exportar.", true);
+      return;
+    }
+    if (!confirm("Baixar a relação completa em PDF e remover todos os registros de ausências deste navegador? Verifique o arquivo na pasta de downloads após a operação.")) {
+      return;
+    }
+
+    exportButton.disabled = true;
+    try {
+      // Não excluir se a geração do PDF ou o início do download falhar.
+      const blob = gerarPdfRelacao(registros);
+      const dateTag = new Date().toISOString().slice(0, 10);
+      iniciarDownload(blob, "Registro_Ausencias_" + dateTag + ".pdf");
+    } catch (error) {
+      console.error("Falha na exportação de ausências:", error);
+      showMessage("Não foi possível gerar ou iniciar o download do PDF. Os registros foram mantidos.", true);
+      exportButton.disabled = false;
+      return;
+    }
+
+    try {
+      localStorage.removeItem(KEY);
+      registros = [];
+      reset();
+      render();
+      showMessage("Download do PDF iniciado; registros removidos deste navegador. Confira se o arquivo foi salvo na pasta de downloads.", false);
+    } catch (error) {
+      console.error("Não foi possível apagar os registros locais:", error);
+      showMessage("O download foi iniciado, mas não foi possível excluir os registros salvos neste navegador.", true);
+      exportButton.disabled = false;
+    }
+  }
+
+  exportButton.addEventListener("click", exportarELimpar);
   cancel.addEventListener("click", reset);
   registros = readStored();
   render();
