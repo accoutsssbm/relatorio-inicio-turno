@@ -209,8 +209,8 @@ function renderPreventivas() {
       </div>
       <div class="grid grid-2 mb-2">
         <div class="form-group">
-          <label>TAG</label>
-          <input type="text" value="${escapeHtml(item.tag)}" placeholder="Ex: CM4050" oninput="updatePreventivaField('${item.id}', 'tag', this.value)">
+          <label>TAG <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.tag)}" placeholder="Ex: CM4050" oninput="updatePreventivaField('${item.id}', 'tag', this.value)">
         </div>
         <div class="form-group">
           <label>Tempo Programado</label>
@@ -234,8 +234,8 @@ function renderPreventivas() {
       </div>
       <div class="grid grid-2">
         <div class="form-group">
-          <label>Data da Parada</label>
-          <input type="text" value="${escapeHtml(item.dataParada)}" placeholder="Ex: 29/10/26 23:00h" oninput="updatePreventivaField('${item.id}', 'dataParada', this.value)">
+          <label>Data da Parada <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.dataParada)}" placeholder="Ex: 29/10/26 23:00h" oninput="updatePreventivaField('${item.id}', 'dataParada', this.value)">
         </div>
         <div class="form-group">
           <label>Previsão Liberação</label>
@@ -260,8 +260,8 @@ function renderCorretivas() {
       </div>
       <div class="grid grid-2 mb-2">
         <div class="form-group">
-          <label>TAG</label>
-          <input type="text" value="${escapeHtml(item.tag)}" placeholder="Ex: CM4119" oninput="updateCorretivaField('${item.id}', 'tag', this.value)">
+          <label>TAG <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.tag)}" placeholder="Ex: CM4119" oninput="updateCorretivaField('${item.id}', 'tag', this.value)">
         </div>
         <div class="form-group">
           <label>Equipe</label>
@@ -274,8 +274,8 @@ function renderCorretivas() {
       </div>
       <div class="grid grid-2">
         <div class="form-group">
-          <label>Data da Parada</label>
-          <input type="text" value="${escapeHtml(item.dataParada)}" placeholder="Ex: 29/10/26 15:55h" oninput="updateCorretivaField('${item.id}', 'dataParada', this.value)">
+          <label>Data da Parada <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.dataParada)}" placeholder="Ex: 29/10/26 15:55h" oninput="updateCorretivaField('${item.id}', 'dataParada', this.value)">
         </div>
         <div class="form-group">
           <label>Previsão Liberação</label>
@@ -369,6 +369,20 @@ window.removeAtencao = function(id) {
   saveDraft();
   updatePreview();
 };
+
+// Os botões de exportação e cópia não enviam o formulário; validar antes de prosseguir.
+function validarCamposObrigatoriosInicio() {
+  const campos = document.querySelectorAll('#shift-form [required]');
+  for (const campo of campos) {
+    if (!String(campo.value || '').trim() || !campo.checkValidity()) {
+      campo.focus();
+      campo.reportValidity();
+      alert('Preencha os campos obrigatórios indicados com * antes de exportar ou compartilhar o relatório.');
+      return false;
+    }
+  }
+  return true;
+}
 
 // ==========================================
 // BIND DE EVENTOS
@@ -479,6 +493,7 @@ function bindEvents() {
 
   // Botão Imprimir
   dom.btnPrintReport.addEventListener('click', () => {
+    if (!validarCamposObrigatoriosInicio()) return;
     window.print();
   });
 }
@@ -588,6 +603,7 @@ function formatarTextoParaWhatsApp(texto) {
 }
 
 function copyFormattedText() {
+  if (!validarCamposObrigatoriosInicio()) return;
   const text = formatarTextoParaWhatsApp(buildFormattedText());
   navigator.clipboard.writeText(text).then(() => {
     dom.copyToast.classList.remove('hidden');
@@ -603,6 +619,7 @@ function copyFormattedText() {
 // GERAÇÃO DO ARQUIVO DOCX NATIVO
 // ==========================================
 async function generateDocx() {
+  if (!validarCamposObrigatoriosInicio()) return;
   if (!window.docx) {
     alert("A biblioteca de geração DOCX ainda está carregando ou não pôde ser iniciada.");
     return;
