@@ -86,7 +86,7 @@
     const ordered = [...registros].sort((a, b) =>
       b.data.localeCompare(a.data) || (b.criadoEm || "").localeCompare(a.criadoEm || ""));
     list.innerHTML = '<div class="ausencias-tabela-scroll"><table class="ausencias-tabela">' +
-      '<thead><tr><th>Data</th><th>Colaborador</th><th>Frota</th><th>TURNO</th><th>Observação</th><th>Ações</th></tr></thead>' +
+      '<thead><tr><th>Data</th><th>Colaborador</th><th>Frota</th><th>Turno</th><th>Observação</th><th>Ações</th></tr></thead>' +
       '<tbody>' + ordered.map(item => (
         '<tr><td>' + safe(displayDate(item.data)) + '</td>' +
         '<td>' + safe(item.nome) + '</td>' +
@@ -242,7 +242,7 @@
       linha("Data", displayDate(item.data));
       linha("Colaborador", item.nome);
       linha("Frota", item.frota);
-      linha("TURNO", item.turma);
+      linha("Turno", item.turma);
       linha("Observação", item.observacao);
       y += 7;
     });
