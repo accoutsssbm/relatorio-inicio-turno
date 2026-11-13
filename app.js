@@ -15,7 +15,7 @@ const MODELO_PADRAO = {
   qtdCorr: 1,
   qtdAcid: 0,
   seguranca: "",
-  escopoPrev: "GP / Perfuratriz / Escavação",
+  escopoPrev: "Transporte GP",
   preventivas: [
     {
       id: "prev_1",
@@ -100,6 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Compatibilizar os rascunhos antigos com as opções fechadas de frota.
+  appState.frota = normalizarFrotaTurno(appState.frota);
+  appState.escopoPrev = normalizarFrotaTurno(appState.escopoPrev);
+
   // Preencher formulário
   syncStateToInputs();
   renderDynamicLists();
@@ -110,6 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 // SINCRONIZAÇÃO DE ESTADO E INPUTS
 // ==========================================
+function normalizarFrotaTurno(value) {
+  const texto = String(value || '').trim();
+  if (texto === 'Escavação/Perfuratriz') return 'Escavação/Perfuração';
+  return ['Transporte GP', 'Infraestrutura', 'Escavação/Perfuração'].includes(texto) ? texto : '';
+}
+
 function syncStateToInputs() {
   dom.frota.value = appState.frota || '';
   dom.turma.value = appState.turma || '';
@@ -121,7 +131,7 @@ function syncStateToInputs() {
   dom.qtdCorr.value = appState.qtdCorr ?? appState.corretivas.length;
   dom.qtdAcid.value = appState.qtdAcid ?? 0;
   dom.seguranca.value = appState.seguranca || '';
-  dom.escopoPrev.value = appState.escopoPrev || 'GP / Perfuratriz / Escavação';
+  dom.escopoPrev.value = appState.escopoPrev || '';
 }
 
 function syncInputsToState() {
