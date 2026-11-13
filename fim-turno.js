@@ -9,7 +9,7 @@
     tecCorr:"Mário Barbosa",data:"29/10/2026",qtdPrev:2,qtdCorr:1,qtdAcid:0,
     qtdLiberados:2,seguranca:"",escopoPrev:"Transporte GP",
     preventivas:[{
-      id:"fp1",tag:"CM4050",atividades:"MP 500hs / Franzen / Analub / Automação / Subst. cuica / Suporte do reboque / Backlog\u0060s (Linha 01)",
+      id:"fp1",tag:"CM4050",ordem:"",atividades:"MP 500hs / Franzen / Analub / Automação / Subst. cuica / Suporte do reboque / Backlog\u0060s (Linha 01)",
       equipeCampos:["Fenelon","Guilherme","Carlos","Zé Maria",""],
       tempoProgramado:"36horas",dataParada:"29/10/26 23:00h",previsaoLiberacao:"30/10/26 15:00h",
       executadas:"PM concluída\nSubstituído Cuicas\nExtra: Substituído Baterias",
@@ -40,7 +40,7 @@
   const countKeys = {preventivas:"qtdPrev",corretivas:"qtdCorr",liberados:"qtdLiberados"};
   const fields = {
     preventivas:[
-      ["tag","TAG"],["atividades","Atividades"],["equipeCampos","Equipe"],
+      ["tag","TAG"],["ordem","OM"],["atividades","Atividades"],["equipeCampos","Equipe"],
       ["tempoProgramado","Tempo programado"],["dataParada","Data da Parada"],
       ["previsaoLiberacao","Previsão Liberação"],["executadas","Principais Atividades Executadas no turno","area"],
       ["desvios","Desvios durante o turno","area"],["pendencias","Pendências para o próximo turno","area"]
@@ -166,7 +166,7 @@
       "⚠️Segurança/Meio Ambiente: "+val("seguranca"),"",
       "🔵Equipamento em Manutenção Preventiva: "+val("escopoPrev"),""];
     state.preventivas.forEach(p=>{
-      out.push("TAG: "+(p.tag||""),"Atividades: "+(p.atividades||""),"Equipe: "+team(p),
+      out.push("TAG: "+(p.tag||""),"OM: "+(p.ordem||""),"Atividades: "+(p.atividades||""),"Equipe: "+team(p),
         "Tempo programado: "+(p.tempoProgramado||""),"Data da Parada: "+(p.dataParada||""),
         "Previsão Liberação: "+(p.previsaoLiberacao||""),"Principais Atividades Executadas no turno:");
       out.push(...bullet(p.executadas),"Desvios durante o turno:",...bullet(p.desvios),
@@ -220,7 +220,7 @@ function formatarTextoParaWhatsApp(texto) {
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
     '🔵Equipamento em Manutenção Preventiva',
-    'TAG', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
+    'TAG', 'OM', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
     'Data da Parada', 'Previsão Liberação', 'Falha', 'Liberação'
   ]);
   return texto.split('\n').map(linha => {
