@@ -42,6 +42,7 @@ const MODELO_PADRAO = {
     {
       id: "corr_1",
       tag: "CM4119",
+      ordem: "",
       falha: "Câmera frontal esquerda inoperante",
       equipe: "Pedro e Robson",
       dataParada: "29/10/26 15:55h",
@@ -264,10 +265,14 @@ function renderCorretivas() {
         <span class="item-tag-title">🟡 Item #${index + 1} - ${item.tag || 'Novo TAG'}</span>
         <button type="button" class="btn-remove-item" title="Remover este equipamento" onclick="removeCorretiva('${item.id}')">✕</button>
       </div>
-      <div class="grid grid-2 mb-2">
+      <div class="grid grid-3 mb-2">
         <div class="form-group">
           <label>TAG <span class="required">*</span></label>
           <input type="text" required value="${escapeHtml(item.tag)}" placeholder="Ex: CM4119" oninput="updateCorretivaField('${item.id}', 'tag', this.value)">
+        </div>
+        <div class="form-group">
+          <label>OM <span class="required">*</span></label>
+          <input type="text" required value="${escapeHtml(item.ordem || '')}" placeholder="Número da OM" oninput="updateCorretivaField('${item.id}', 'ordem', this.value)">
         </div>
         <div class="form-group">
           <label>Equipe</label>
@@ -432,6 +437,7 @@ function bindEvents() {
     appState.corretivas.push({
       id: newId,
       tag: "",
+      ordem: "",
       falha: "",
       equipe: "",
       dataParada: "",
@@ -548,6 +554,7 @@ function buildFormattedText() {
   if (appState.corretivas && appState.corretivas.length > 0) {
     appState.corretivas.forEach(c => {
       lines.push(`TAG: ${c.tag}`);
+      lines.push(`OM: ${c.ordem || ""}`);
       lines.push(`Falha: ${c.falha}`);
       lines.push(`Equipe: ${c.equipe}`);
       lines.push(`Data da Parada: ${c.dataParada}`);
@@ -753,6 +760,7 @@ async function generateDocx() {
   if (appState.corretivas && appState.corretivas.length > 0) {
     appState.corretivas.forEach(c => {
       children.push(makeKvParagraph("TAG:", c.tag));
+      children.push(makeKvParagraph("OM:", c.ordem || ""));
       children.push(makeKvParagraph("Falha:", c.falha));
       children.push(makeKvParagraph("Equipe:", c.equipe));
       children.push(makeKvParagraph("Data da Parada:", c.dataParada));
