@@ -46,12 +46,12 @@
       ["desvios","Desvios durante o turno","area"],["pendencias","Pendências para o próximo turno","area"]
     ],
     corretivas:[
-      ["tag","TAG"],["ordem","Ordem"],["falha","Falha"],["equipe","Equipe"],
+      ["tag","TAG"],["ordem","OM"],["falha","Falha"],["equipe","Equipe"],
       ["dataParada","Data da Parada"],["previsaoLiberacao","Previsão Liberação"],
       ["descricaoAtividade","Descrição Atividade","area"],["pendencias","Pendências para o próximo turno","area"]
     ],
     liberadoCorretiva:[
-      ["tag","TAG"],["ordem","Ordem"],["equipe","Equipe"],["data","Data"],
+      ["tag","TAG"],["ordem","OM"],["equipe","Equipe"],["data","Data"],
       ["descricaoFalha","Descrição da falha","area"],["correcaoFalha","Correção da falha","area"]
     ],
     liberadoPreventiva:[
@@ -174,7 +174,7 @@
     });
     out.push("🟡Equipamentos em Corretiva:","");
     state.corretivas.forEach(c=>{
-      out.push("TAG: "+(c.tag||""),"Ordem: "+(c.ordem||""),"Falha: "+(c.falha||""),
+      out.push("TAG: "+(c.tag||""),"OM: "+(c.ordem||""),"Falha: "+(c.falha||""),
         "Equipe: "+(c.equipe||""),"Data da Parada: "+(c.dataParada||""),
         "Previsão Liberação: "+(c.previsaoLiberacao||""),"Descrição Atividade:",
         ...splitLines(c.descricaoAtividade),"","Pendências para o próximo turno:",
@@ -188,7 +188,7 @@
           "Principais Atividades Executadas:",...bullet(l.executadas),
           "Desvios:",...bullet(l.desvios),"");
       } else {
-        out.push("TAG: "+(l.tag||""),"Ordem: "+(l.ordem||""),
+        out.push("TAG: "+(l.tag||""),"OM: "+(l.ordem||""),
           "Equipe: "+(l.equipe||""),"Data: "+(l.data||""),
           "Descrição da falha:",...splitLines(l.descricaoFalha),
           "Correção da falha:",...splitLines(l.correcaoFalha),"");
@@ -220,7 +220,7 @@ function formatarTextoParaWhatsApp(texto) {
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
     '🔵Equipamento em Manutenção Preventiva',
-    'TAG', 'OM', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
+    'TAG', 'OM', 'Atividades', 'Equipe', 'Tempo programado',
     'Data da Parada', 'Previsão Liberação', 'Falha', 'Liberação'
   ]);
   return texto.split('\n').map(linha => {
