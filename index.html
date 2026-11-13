@@ -359,6 +359,10 @@
               <input id="ausencia-nome" type="text" maxlength="150" placeholder="Nome do colaborador" required>
             </div>
             <div class="form-group">
+              <label for="ausencia-supervisor">Supervisor <span class="required">*</span></label>
+              <input id="ausencia-supervisor" type="text" maxlength="150" placeholder="Nome do supervisor" required>
+            </div>
+            <div class="form-group">
               <label for="ausencia-data">Data da ausência <span class="required">*</span></label>
               <input id="ausencia-data" type="date" required>
             </div>
@@ -370,10 +374,10 @@
               <label for="ausencia-turma">Turno</label>
               <select id="ausencia-turma"><option value="">Selecione o turno</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
             </div>
-            <div class="form-group" style="grid-column:span 2">
-              <label for="ausencia-observacao">Observação (opcional)</label>
-              <select id="ausencia-observacao">
-                <option value="">Selecione uma opção</option>
+            <div class="form-group">
+              <label for="ausencia-observacao">Justificativa <span class="required">*</span></label>
+              <select id="ausencia-observacao" required>
+                <option value="">Selecione a justificativa</option>
                 <option value="Treinamento Interno">Treinamento Interno</option>
                 <option value="Treinamento Externo">Treinamento Externo</option>
                 <option value="Atestado Médico">Atestado Médico</option>
