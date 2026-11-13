@@ -56,7 +56,8 @@
     #panel-ausencias .ausencias-layout { padding-top: 20px; }
     #panel-ausencias .ausencias-layout .card { max-width: none; margin-bottom: 20px; }
     #panel-ausencias .ausencias-form-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
-    #panel-ausencias .ausencias-header-lista { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    #panel-ausencias .ausencias-header-lista { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+    #panel-ausencias #ausencias-exportar-pdf:disabled { opacity:.55; cursor:not-allowed; }
     #panel-ausencias .ausencias-contador { font-size:13px; color:var(--text-muted); font-weight:600; }
     #panel-ausencias .ausencias-aviso { color:var(--text-muted); font-size:13px; margin:2px 0 14px; }
     #panel-ausencias .ausencias-mensagem { min-height:18px; font-size:13px; color:#166534; margin-top:12px; }
@@ -386,8 +387,9 @@
         <div class="card-header ausencias-header-lista">
           <h2 id="ausencias-lista-titulo">Ausências registradas</h2>
           <span id="ausencias-contador" class="ausencias-contador">0 registros</span>
+          <button type="button" id="ausencias-exportar-pdf" class="btn btn-outline" disabled>Baixar PDF e limpar registros</button>
         </div>
-        <p class="ausencias-aviso">Os registros ficam salvos somente neste navegador. Ainda não há compartilhamento entre computadores.</p>
+        <p class="ausencias-aviso">Os registros ficam salvos somente neste navegador. Após iniciar o download do PDF, eles serão removidos daqui. Confira o arquivo baixado.</p>
         <div id="ausencias-lista"></div>
       </section>
     </main>
@@ -396,6 +398,12 @@
   <script src="app.js"></script>
   <script src="fim-turno.js"></script>
   <script src="calendarios.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
+  <script>
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"><\/script>');
+    }
+  </script>
   <script src="registro-ausencias.js"></script>
 
   <script>
