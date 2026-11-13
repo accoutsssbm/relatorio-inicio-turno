@@ -29,7 +29,7 @@
     #panel-fim .indicator-green { background: #f0fdf4; border-color: #bbf7d0; }
     #panel-fim .app-header { margin-bottom: 0; }
     #panel-fim .report-fim-status { color: var(--text-muted); }
-    #panel-fim[hidden], #panel-inicio[hidden] { display: none !important; }
+    #panel-fim[hidden], #panel-inicio[hidden], #panel-ausencias[hidden] { display: none !important; }
     /* Campo de data com calendário nativo, sem perder a digitação de data/hora */
     .campo-com-calendario { display: flex; position: relative; width: 100%; min-width: 0; }
     .campo-com-calendario > input[type="text"] {
@@ -51,7 +51,31 @@
       width: 42px !important; height: 100% !important;
       opacity: 0; z-index: 2; pointer-events: auto; cursor: pointer;
     }
+
+    /* Registro de ausências — visual coerente com os relatórios */
+    #panel-ausencias .ausencias-layout { padding-top: 20px; }
+    #panel-ausencias .ausencias-layout .card { max-width: none; margin-bottom: 20px; }
+    #panel-ausencias .ausencias-form-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px; }
+    #panel-ausencias .ausencias-header-lista { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    #panel-ausencias .ausencias-contador { font-size:13px; color:var(--text-muted); font-weight:600; }
+    #panel-ausencias .ausencias-aviso { color:var(--text-muted); font-size:13px; margin:2px 0 14px; }
+    #panel-ausencias .ausencias-mensagem { min-height:18px; font-size:13px; color:#166534; margin-top:12px; }
+    #panel-ausencias .ausencias-mensagem.ausencias-erro { color:#b91c1c; }
+    #panel-ausencias .ausencias-tabela-scroll { overflow-x:auto; }
+    #panel-ausencias .ausencias-tabela { width:100%; border-collapse:collapse; font-size:13px; }
+    #panel-ausencias .ausencias-tabela th { text-align:left; padding:10px; color:#334155; border-bottom:2px solid var(--border-color); background:#f8fafc; white-space:nowrap; }
+    #panel-ausencias .ausencias-tabela td { padding:11px 10px; border-bottom:1px solid var(--border-color); vertical-align:top; }
+    #panel-ausencias .ausencias-tabela .ausencias-observacao { white-space:pre-wrap; overflow-wrap:anywhere; max-width:360px; }
+    #panel-ausencias .ausencias-acoes { white-space:nowrap; }
+    #panel-ausencias .ausencias-acoes .btn { margin-bottom:4px; }
+    #panel-ausencias .ausencias-vazio { color:var(--text-muted); font-size:14px; }
+    #panel-ausencias textarea { resize:vertical; }
+    @media (max-width: 560px) {
+      .report-tabs-inner { gap:0; }
+      .report-tab { flex:1; padding:12px 5px; font-size:12px; }
+    }
     @media print {
+      #panel-ausencias { display:none !important; }
       .report-tabs, #panel-fim .app-header, #panel-fim .draft-bar, #panel-fim .form-column, #panel-fim .app-footer { display:none !important; }
       #panel-fim:not([hidden]) { display:block !important; padding:0 !important; }
       #panel-fim .preview-column { display:block !important; }
@@ -78,6 +102,7 @@
     <div class="container report-tabs-inner">
       <button type="button" id="tab-inicio" class="report-tab" aria-pressed="true" aria-controls="panel-inicio">Início de Turno</button>
       <button type="button" id="tab-fim" class="report-tab" aria-pressed="false" aria-controls="panel-fim">Fim de Turno</button>
+      <button type="button" id="tab-ausencias" class="report-tab" aria-pressed="false" aria-controls="panel-ausencias">Registro de Ausências</button>
     </div>
   </nav>
 
@@ -311,31 +336,87 @@
 
   <section id="panel-fim" class="report-fim" aria-labelledby="tab-fim" hidden><header class="app-header"><div class="container header-container"><div class="header-brand"><div class="header-icon">📋</div><div><h1 class="header-title">Relatório de Fim de Turno</h1><p class="header-subtitle">Atividades executadas, desvios, pendências e equipamentos liberados</p></div></div><div class="header-actions"><button type="button" class="btn btn-outline" id="fim-load-sample">⚡ Carregar Exemplo</button><button type="button" class="btn btn-ghost" id="fim-clear-all">🗑️ Limpar</button></div></div></header><div class="container draft-bar"><span id="fim-draft-status" class="draft-indicator">💾 Rascunho salvo automaticamente</span><span class="badge-version">Relatório de Fim de Turno</span></div><main class="container main-layout"><section class="form-column"><div class="card"><div class="card-header flex-between"><div class="flex-align"><span class="card-number">1</span><h2>Identificação Geral do Turno</h2></div></div><div class="grid grid-3"><div class="form-group"><label for="fim-frota">Frota <span class="required">*</span></label><input id="fim-frota" type="text" data-main="frota" ></div><div class="form-group"><label for="fim-turma">Turma <span class="required">*</span></label><input id="fim-turma" type="text" data-main="turma" ></div><div class="form-group"><label for="fim-data">Data do Turno <span class="required">*</span></label><input id="fim-data" type="text" data-main="data" ></div><div class="form-group"><label for="fim-supervisor">Supervisor <span class="required">*</span></label><input id="fim-supervisor" type="text" data-main="supervisor" ></div><div class="form-group"><label for="fim-tecPrev">Técnico Preventiva</label><input id="fim-tecPrev" type="text" data-main="tecPrev" ></div><div class="form-group"><label for="fim-tecCorr">Técnico Corretiva</label><input id="fim-tecCorr" type="text" data-main="tecCorr" ></div></div></div><div class="card"><div class="card-header flex-between"><div class="flex-align"><span class="card-number">2</span><h2>Resumo Operacional e Segurança</h2></div></div><p class="card-hint">Indicadores editáveis. Ao adicionar ou remover equipamentos, os contadores da categoria são atualizados automaticamente.</p><div class="grid grid-2 indicators-grid"><div class="indicator-card indicator-blue"><label for="fim-qtdPrev" class="indicator-label">🔵 Preventiva</label><input id="fim-qtdPrev" data-main="qtdPrev" class="indicator-input" type="number" min="0"></div><div class="indicator-card indicator-yellow"><label for="fim-qtdCorr" class="indicator-label">🟡 Corretiva</label><input id="fim-qtdCorr" data-main="qtdCorr" class="indicator-input" type="number" min="0"></div><div class="indicator-card indicator-red"><label for="fim-qtdAcid" class="indicator-label">🔴 Acidente</label><input id="fim-qtdAcid" data-main="qtdAcid" class="indicator-input" type="number" min="0"></div><div class="indicator-card indicator-green"><label for="fim-qtdLiberados" class="indicator-label">🟢 Liberado no Turno</label><input id="fim-qtdLiberados" data-main="qtdLiberados" class="indicator-input" type="number" min="0"></div></div><div class="form-group mt-4"><label for="fim-seguranca">⚠️ Segurança / Meio Ambiente</label><input id="fim-seguranca" data-main="seguranca" type="text" placeholder="Observações de segurança e meio ambiente"></div></div><div class="card"><div class="card-header flex-between"><div class="flex-align"><span class="card-number">3</span><h2>🔵 Equipamentos em Manutenção Preventiva</h2></div><button type="button" class="btn btn-sm btn-blue" data-add="preventivas">+ Adicionar Equipamento</button></div><div class="form-group mb-3"><label for="fim-escopoPrev">Frota</label><input id="fim-escopoPrev" data-main="escopoPrev" type="text" placeholder="Ex.: GP / Perfuratriz / Escavação"></div><div data-list="preventivas" class="items-container"></div></div><div class="card"><div class="card-header flex-between"><div class="flex-align"><span class="card-number">4</span><h2>🟡 Equipamentos em Corretiva</h2></div><button type="button" class="btn btn-sm btn-yellow" data-add="corretivas">+ Adicionar Equipamento</button></div><div data-list="corretivas" class="items-container"></div></div><div class="card"><div class="card-header flex-between"><div class="flex-align"><span class="card-number">5</span><h2>🟢 Equipamentos Liberados no Turno</h2></div><button type="button" class="btn btn-sm btn-success" data-add="liberados">+ Adicionar Equipamento</button></div><div data-list="liberados" class="items-container"></div></div></section><aside class="preview-column"><div class="sticky-preview"><div class="card preview-card"><div class="card-header flex-between"><h2>Pré-Visualização do Relatório</h2><span class="preview-tag">Ao Vivo</span></div><div class="export-actions"><button type="button" class="btn btn-primary btn-block btn-lg" id="fim-download-docx">📄 Baixar Arquivo (.DOCX)</button><div class="grid grid-2 mt-2"><button type="button" class="btn btn-success btn-block" id="fim-copy-whatsapp">💬 Copiar p/ WhatsApp</button><button type="button" class="btn btn-secondary btn-block" id="fim-print-report">🖨️ Imprimir / PDF</button></div></div><div id="fim-copy-toast" class="toast hidden">✅ Texto copiado para a área de transferência!</div><div class="preview-content-box"><pre id="fim-preview-text" class="preview-text"></pre></div><div class="preview-footer"><small>O documento Word segue a estrutura do relatório de fim de turno fornecido.</small></div></div></div></aside></main><footer class="app-footer"><div class="container"><p>Relatório de Fim de Turno • Versão Web</p></div></footer></section>
 
+
+  <section id="panel-ausencias" aria-labelledby="tab-ausencias" hidden>
+    <header class="app-header">
+      <div class="container header-container">
+        <div class="header-brand">
+          <div class="header-icon" aria-hidden="true">📋</div>
+          <div>
+            <h1 class="header-title">Registro de Ausências</h1>
+            <p class="header-subtitle">Cadastro e acompanhamento de ausências da equipe</p>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container ausencias-layout">
+      <section class="card" aria-labelledby="ausencias-form-titulo">
+        <div class="card-header"><h2 id="ausencias-form-titulo">Cadastrar ausência</h2></div>
+        <form id="ausencias-form" autocomplete="off">
+          <div class="grid grid-3">
+            <div class="form-group">
+              <label for="ausencia-nome">Colaborador <span class="required">*</span></label>
+              <input id="ausencia-nome" type="text" maxlength="150" placeholder="Nome do colaborador" required>
+            </div>
+            <div class="form-group">
+              <label for="ausencia-data">Data da ausência <span class="required">*</span></label>
+              <input id="ausencia-data" type="date" required>
+            </div>
+            <div class="form-group">
+              <label for="ausencia-frota">Frota</label>
+              <input id="ausencia-frota" type="text" maxlength="120" placeholder="Ex.: Transporte GP">
+            </div>
+            <div class="form-group">
+              <label for="ausencia-turma">Turma</label>
+              <input id="ausencia-turma" type="text" maxlength="80" placeholder="Ex.: A">
+            </div>
+            <div class="form-group" style="grid-column:span 2">
+              <label for="ausencia-observacao">Observação operacional (opcional)</label>
+              <textarea id="ausencia-observacao" rows="2" maxlength="800" placeholder="Informações necessárias ao acompanhamento, sem detalhes médicos"></textarea>
+            </div>
+          </div>
+          <div class="ausencias-form-actions">
+            <button id="ausencias-salvar" class="btn btn-primary" type="submit">Salvar registro</button>
+            <button id="ausencias-cancelar" class="btn btn-outline" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="ausencias-mensagem" class="ausencias-mensagem" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="card" aria-labelledby="ausencias-lista-titulo">
+        <div class="card-header ausencias-header-lista">
+          <h2 id="ausencias-lista-titulo">Ausências registradas</h2>
+          <span id="ausencias-contador" class="ausencias-contador">0 registros</span>
+        </div>
+        <p class="ausencias-aviso">Os registros ficam salvos somente neste navegador. Ainda não há compartilhamento entre computadores.</p>
+        <div id="ausencias-lista"></div>
+      </section>
+    </main>
+  </section>
+
   <script src="app.js"></script>
   <script src="fim-turno.js"></script>
   <script src="calendarios.js"></script>
+  <script src="registro-ausencias.js"></script>
 
   <script>
-    // Somente alterna a visualização; não altera o estado nem os dados de início de turno.
+    // Alterna somente a aba visível; cada formulário mantém seus próprios dados.
     (function () {
-      const inicio = document.getElementById('panel-inicio');
-      const fim = document.getElementById('panel-fim');
-      const btnInicio = document.getElementById('tab-inicio');
-      const btnFim = document.getElementById('tab-fim');
-
-      function selecionarAba(aba) {
-        const mostrarInicio = aba === 'inicio';
-        inicio.hidden = !mostrarInicio;
-        fim.hidden = mostrarInicio;
-        btnInicio.setAttribute('aria-pressed', String(mostrarInicio));
-        btnFim.setAttribute('aria-pressed', String(!mostrarInicio));
-        document.title = mostrarInicio
-          ? 'Relatório de Início de Turno - Manutenção e Operação'
-          : 'Relatório de Fim de Turno - Manutenção e Operação';
+      const abas = [
+        {nome: 'inicio', painel: document.getElementById('panel-inicio'), botao: document.getElementById('tab-inicio'), titulo:'Relatório de Início de Turno - Manutenção e Operação'},
+        {nome: 'fim', painel: document.getElementById('panel-fim'), botao: document.getElementById('tab-fim'), titulo:'Relatório de Fim de Turno - Manutenção e Operação'},
+        {nome: 'ausencias', painel: document.getElementById('panel-ausencias'), botao: document.getElementById('tab-ausencias'), titulo:'Registro de Ausências - Manutenção e Operação'}
+      ];
+      function selecionarAba(nome) {
+        abas.forEach(function (aba) {
+          const selecionada = aba.nome === nome;
+          aba.painel.hidden = !selecionada;
+          aba.botao.setAttribute('aria-pressed', String(selecionada));
+          if (selecionada) document.title = aba.titulo;
+        });
       }
-
-      btnInicio.addEventListener('click', function () { selecionarAba('inicio'); });
-      btnFim.addEventListener('click', function () { selecionarAba('fim'); });
+      abas.forEach(function (aba) {
+        aba.botao.addEventListener('click', function () { selecionarAba(aba.nome); });
+      });
     })();
   </script>
 </body>
