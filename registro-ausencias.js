@@ -129,8 +129,8 @@
   form.addEventListener("submit", event => {
     event.preventDefault();
     const entry = collect();
-    if (!entry.nome || !entry.supervisor || !entry.frota || !entry.observacao || !validDate(entry.data)) {
-      showMessage("Preencha Colaborador, Supervisor, Frota, Justificativa e uma Data válida.", true);
+    if (!entry.nome || !entry.supervisor || !entry.frota || !["A", "B", "C", "D"].includes(entry.turma) || !entry.observacao || !validDate(entry.data)) {
+      showMessage("Preencha Colaborador, Supervisor, Frota, Turno, Justificativa e uma Data válida.", true);
       return;
     }
     const current = editingId && registros.find(x => x.id === editingId);
