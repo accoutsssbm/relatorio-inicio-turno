@@ -492,7 +492,7 @@ function buildFormattedText() {
 
   lines.push(`Relatório de início de turno`);
   lines.push(`Frota: ${appState.frota}`);
-  lines.push(`TURNO: ${appState.turma}`);
+  lines.push(`Turno: ${appState.turma}`);
   lines.push(`Supervisor: ${appState.supervisor}`);
   lines.push(`Técnico Preventiva: ${appState.tecPrev}`);
   lines.push(`Técnico Corretiva: ${appState.tecCorr}`);
@@ -569,7 +569,7 @@ function formatarTextoParaWhatsApp(texto) {
     'Correção da falha:'
   ]);
   const campos = new Set([
-    'Frota', 'TURNO', 'Supervisor', 'Técnico Preventiva',
+    'Frota', 'Turno', 'Supervisor', 'Técnico Preventiva',
     'Técnico Corretiva', 'Data',
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
@@ -642,7 +642,7 @@ async function generateDocx() {
 
   // 2. Cabeçalho Geral
   children.push(makeKvParagraph("Frota:", appState.frota));
-  children.push(makeKvParagraph("TURNO:", appState.turma));
+  children.push(makeKvParagraph("Turno:", appState.turma));
   children.push(makeKvParagraph("Supervisor:", appState.supervisor));
   children.push(makeKvParagraph("Técnico Preventiva:", appState.tecPrev));
   children.push(makeKvParagraph("Técnico Corretiva:", appState.tecCorr));
