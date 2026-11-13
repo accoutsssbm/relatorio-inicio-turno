@@ -68,6 +68,10 @@
       if(parsed && groups.every(g=>Array.isArray(parsed[g]))) state=Object.assign(clone(modelo),parsed);
     }
   } catch(error) { console.warn("Rascunho de fim de turno indisponível.",error); }
+  function normalizarTurno(value) {
+    const turno = String(value || "").trim().toUpperCase();
+    return ["A", "B", "C", "D"].includes(turno) ? turno : "";
+  }
   function normalizarFrota(value) {
     const texto = String(value || "").trim();
     if (texto === "Escavação/Perfuratriz") return "Escavação/Perfuração";
@@ -75,6 +79,7 @@
   }
   state.frota = normalizarFrota(state.frota);
   state.escopoPrev = normalizarFrota(state.escopoPrev);
+  state.turma = normalizarTurno(state.turma);
   const htmlEscape = v => String(v == null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const val=(k)=>String(state[k]==null?"":state[k]);
   const num=x=>Math.max(0,parseInt(x,10)||0);
@@ -150,7 +155,7 @@
   }
   function formattedText() {
     const out=["Relatório de Final de Turno",
-      "Frota: "+val("frota"),"Turma: "+val("turma"),"Supervisor: "+val("supervisor"),
+      "Frota: "+val("frota"),"TURNO: "+val("turma"),"Supervisor: "+val("supervisor"),
       "Técnico Preventiva: "+val("tecPrev"),"Técnico Corretiva: "+val("tecCorr"),
       "Data: "+val("data"),"",
       "🔵 Preventiva: "+pad(state.qtdPrev),"🟡 Corretiva: "+pad(state.qtdCorr),
@@ -207,7 +212,7 @@ function formatarTextoParaWhatsApp(texto) {
     'Correção da falha:'
   ]);
   const campos = new Set([
-    'Frota', 'Turma', 'Supervisor', 'Técnico Preventiva',
+    'Frota', 'TURNO', 'Supervisor', 'Técnico Preventiva',
     'Técnico Corretiva', 'Data',
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
