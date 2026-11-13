@@ -7,7 +7,7 @@
   const modelo = {
     frota:"Transporte GP",turma:"A",supervisor:"Felipe Fontes",tecPrev:"Rocha",
     tecCorr:"Mário Barbosa",data:"29/10/2026",qtdPrev:2,qtdCorr:1,qtdAcid:0,
-    qtdLiberados:2,seguranca:"",escopoPrev:"GP / Perfuratriz / Escavação",
+    qtdLiberados:2,seguranca:"",escopoPrev:"Transporte GP",
     preventivas:[{
       id:"fp1",tag:"CM4050",atividades:"MP 500hs / Franzen / Analub / Automação / Subst. cuica / Suporte do reboque / Backlog\u0060s (Linha 01)",
       equipeCampos:["Fenelon","Guilherme","Carlos","Zé Maria",""],
@@ -68,6 +68,13 @@
       if(parsed && groups.every(g=>Array.isArray(parsed[g]))) state=Object.assign(clone(modelo),parsed);
     }
   } catch(error) { console.warn("Rascunho de fim de turno indisponível.",error); }
+  function normalizarFrota(value) {
+    const texto = String(value || "").trim();
+    if (texto === "Escavação/Perfuratriz") return "Escavação/Perfuração";
+    return ["Transporte GP", "Infraestrutura", "Escavação/Perfuração"].includes(texto) ? texto : "";
+  }
+  state.frota = normalizarFrota(state.frota);
+  state.escopoPrev = normalizarFrota(state.escopoPrev);
   const htmlEscape = v => String(v == null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   const val=(k)=>String(state[k]==null?"":state[k]);
   const num=x=>Math.max(0,parseInt(x,10)||0);
