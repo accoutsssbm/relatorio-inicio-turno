@@ -372,8 +372,17 @@
               <input id="ausencia-turma" type="text" maxlength="80" placeholder="Ex.: A">
             </div>
             <div class="form-group" style="grid-column:span 2">
-              <label for="ausencia-observacao">Observação operacional (opcional)</label>
-              <textarea id="ausencia-observacao" rows="2" maxlength="800" placeholder="Informações necessárias ao acompanhamento, sem detalhes médicos"></textarea>
+              <label for="ausencia-observacao">Observação (opcional)</label>
+              <select id="ausencia-observacao">
+                <option value="">Selecione uma opção</option>
+                <option value="Treinamento interno">Treinamento interno</option>
+                <option value="Treinamento externo">Treinamento externo</option>
+                <option value="Atestado Médico">Atestado Médico</option>
+                <option value="Folga">Folga</option>
+                <option value="Falta Injustificada">Falta Injustificada</option>
+                <option value="Férias">Férias</option>
+                <option value="Trabalho externo">Trabalho externo</option>
+              </select>
             </div>
           </div>
           <div class="ausencias-form-actions">
