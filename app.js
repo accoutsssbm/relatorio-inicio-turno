@@ -604,7 +604,7 @@ function formatarTextoParaWhatsApp(texto) {
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
     '🔵Equipamento em Manutenção Preventiva',
-    'TAG', 'OM', 'Ordem', 'Atividades', 'Equipe', 'Tempo programado',
+    'TAG', 'OM', 'Atividades', 'Equipe', 'Tempo programado',
     'Data da Parada', 'Previsão Liberação', 'Falha', 'Liberação'
   ]);
   return texto.split('\n').map(linha => {
