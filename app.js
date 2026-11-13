@@ -207,7 +207,7 @@ function renderPreventivas() {
     card.className = 'item-card card-prev';
     card.innerHTML = `
       <div class="item-header">
-        <span class="item-tag-title">🔵 Item #${index + 1} - ${item.tag || 'Novo TAG'}</span>
+        <span class="item-tag-title">🔵 Equipamento ${index + 1} — ${item.tag || 'Novo TAG'}</span>
         <button type="button" class="btn-remove-item" title="Remover este equipamento" onclick="removePreventiva('${item.id}')">✕</button>
       </div>
       <div class="grid grid-3 mb-2">
@@ -262,7 +262,7 @@ function renderCorretivas() {
     card.className = 'item-card card-corr';
     card.innerHTML = `
       <div class="item-header">
-        <span class="item-tag-title">🟡 Item #${index + 1} - ${item.tag || 'Novo TAG'}</span>
+        <span class="item-tag-title">🟡 Equipamento ${index + 1} — ${item.tag || 'Novo TAG'}</span>
         <button type="button" class="btn-remove-item" title="Remover este equipamento" onclick="removeCorretiva('${item.id}')">✕</button>
       </div>
       <div class="grid grid-3 mb-2">
