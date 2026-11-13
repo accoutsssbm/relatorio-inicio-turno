@@ -14,6 +14,7 @@
   const exportButton = document.getElementById("ausencias-exportar-pdf");
   const fields = {
     nome: document.getElementById("ausencia-nome"),
+    supervisor: document.getElementById("ausencia-supervisor"),
     frota: document.getElementById("ausencia-frota"),
     turma: document.getElementById("ausencia-turma"),
     data: document.getElementById("ausencia-data"),
@@ -86,10 +87,11 @@
     const ordered = [...registros].sort((a, b) =>
       b.data.localeCompare(a.data) || (b.criadoEm || "").localeCompare(a.criadoEm || ""));
     list.innerHTML = '<div class="ausencias-tabela-scroll"><table class="ausencias-tabela">' +
-      '<thead><tr><th>Data</th><th>Colaborador</th><th>Frota</th><th>Turno</th><th>Observação</th><th>Ações</th></tr></thead>' +
+      '<thead><tr><th>Data</th><th>Colaborador</th><th>Supervisor</th><th>Frota</th><th>Turno</th><th>Justificativa</th><th>Ações</th></tr></thead>' +
       '<tbody>' + ordered.map(item => (
         '<tr><td>' + safe(displayDate(item.data)) + '</td>' +
         '<td>' + safe(item.nome) + '</td>' +
+        '<td>' + safe(item.supervisor || "—") + '</td>' +
         '<td>' + safe(item.frota || "—") + '</td>' +
         '<td>' + safe(item.turma || "—") + '</td>' +
         '<td class="ausencias-observacao">' + safe(item.observacao || "—") + '</td>' +
@@ -116,6 +118,7 @@
   function collect() {
     return {
       nome: fields.nome.value.trim(),
+      supervisor: fields.supervisor.value.trim(),
       frota: fields.frota.value.trim(),
       turma: fields.turma.value.trim(),
       data: fields.data.value,
@@ -126,8 +129,8 @@
   form.addEventListener("submit", event => {
     event.preventDefault();
     const entry = collect();
-    if (!entry.nome || !entry.frota || !validDate(entry.data)) {
-      showMessage("Preencha o colaborador, a Frota e uma data válida.", true);
+    if (!entry.nome || !entry.supervisor || !entry.frota || !entry.observacao || !validDate(entry.data)) {
+      showMessage("Preencha Colaborador, Supervisor, Frota, Justificativa e uma Data válida.", true);
       return;
     }
     const current = editingId && registros.find(x => x.id === editingId);
@@ -241,9 +244,10 @@
       y += 9;
       linha("Data", displayDate(item.data));
       linha("Colaborador", item.nome);
+      linha("Supervisor", item.supervisor);
       linha("Frota", item.frota);
       linha("Turno", item.turma);
-      linha("Observação", item.observacao);
+      linha("Justificativa", item.observacao);
       y += 7;
     });
 
