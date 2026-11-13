@@ -182,82 +182,139 @@
       throw new Error("A biblioteca de PDF não foi carregada.");
     }
 
-    const pdf = new Ctor({ orientation: "portrait", unit: "mm", format: "a4" });
-    const left = 16;
-    const right = 194;
-    const printableWidth = right - left;
+    // Layout horizontal: cabeçalho com dados da relação e tabela como na tela.
+    const pdf = new Ctor({ orientation: "landscape", unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const bottom = pageHeight - 20;
-    let y = 25;
-
-    function novoCabecalho(continuacao) {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text("Registro de Ausências" + (continuacao ? " - continuação" : ""), left, 17);
-      pdf.setDrawColor(205, 210, 215);
-      pdf.line(left, 19, right, 19);
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(10);
-    }
-
-    function espaco(altura) {
-      if (y + altura > bottom) {
-        pdf.addPage();
-        y = 27;
-        novoCabecalho(true);
-      }
-    }
-
-    function linha(label, value) {
-      const content = String(value == null || value === "" ? "—" : value)
-        .replace(/\r/g, "").replace(/\t/g, "    ").replace(/\u0000/g, "");
-      const paragraphs = content.split("\n");
-      paragraphs.forEach((paragraph, index) => {
-        const head = index === 0 ? label + ": " : "";
-        const wrapped = pdf.splitTextToSize(head + (paragraph || (index === 0 ? "—" : "")), printableWidth);
-        wrapped.forEach((part) => {
-          espaco(5.3);
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(9.5);
-          pdf.text(part, left, y);
-          y += 5.3;
-        });
-      });
-    }
-
-    novoCabecalho(false);
-    const geradoEm = new Date().toLocaleString("pt-BR");
-    linha("Gerado em", geradoEm);
-    linha("Total de registros", items.length);
-    y += 5;
+    const left = 13;
+    const right = pageWidth - 13;
+    const width = right - left;
+    const bottom = pageHeight - 18;
+    const tableTop = 49;
+    const firstRowY = 60;
+    const lineHeight = 4.8;
+    let y = firstRowY;
 
     const ordered = [...items].sort((a, b) =>
       b.data.localeCompare(a.data) || (b.criadoEm || "").localeCompare(a.criadoEm || ""));
 
-    ordered.forEach((item, index) => {
-      espaco(16);
-      pdf.setDrawColor(224, 228, 232);
-      pdf.line(left, y - 2.5, right, y - 2.5);
+    const printable = value => String(value == null || value === "" ? "-" : value)
+      .replace(/\r/g, "").replace(/\t/g, "  ").replace(/\u0000/g, "").trim() || "-";
+
+    // Quando a relação contém valores diferentes, não atribuir um único
+    // supervisor, turno, frota ou data a todos os registros.
+    function resumo(selector, plural) {
+      const distinct = [...new Set(ordered.map(item => printable(selector(item))))];
+      return distinct.length === 1 ? distinct[0] : plural;
+    }
+
+    const metadata = [
+      { label: "Data", value: resumo(item => displayDate(item.data), "Várias datas"), width: 49 },
+      { label: "Supervisor", value: resumo(item => item.supervisor, "Vários supervisores"), width: 76 },
+      { label: "Turno", value: resumo(item => item.turma, "Vários turnos"), width: 35 },
+      { label: "Frota", value: resumo(item => item.frota, "Várias frotas"), width: width - 160 }
+    ];
+
+    const columns = [
+      { label: "Data", width: 29, value: item => displayDate(item.data) },
+      { label: "Colaborador", width: 48, value: item => item.nome },
+      { label: "Supervisor", width: 44, value: item => item.supervisor },
+      { label: "Frota", width: 58, value: item => item.frota },
+      { label: "Turno", width: 22, value: item => item.turma },
+      { label: "Justificativa", width: width - 201, value: item => item.observacao }
+    ];
+
+    function pageHeader() {
+      pdf.setTextColor(28, 42, 61);
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(11);
-      pdf.text("Registro " + (index + 1), left, y + 2);
-      y += 9;
-      linha("Data", displayDate(item.data));
-      linha("Colaborador", item.nome);
-      linha("Supervisor", item.supervisor);
-      linha("Frota", item.frota);
-      linha("Turno", item.turma);
-      linha("Justificativa", item.observacao);
-      y += 7;
+      pdf.setFontSize(15);
+      pdf.text("Registro de Ausências", left, 17);
+
+      let x = left;
+      metadata.forEach(field => {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.setTextColor(82, 93, 110);
+        pdf.text(field.label, x + 2, 28);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(28, 42, 61);
+        const valueLines = pdf.splitTextToSize(field.value, field.width - 6).slice(0, 2);
+        valueLines.forEach((line, i) => pdf.text(line, x + 2, 35 + i * 4.5));
+        x += field.width;
+      });
+
+      pdf.setDrawColor(211, 217, 225);
+      pdf.line(left, 44, right, 44);
+      pdf.setFillColor(245, 247, 250);
+      pdf.rect(left, tableTop, width, 10, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9.5);
+      pdf.setTextColor(28, 42, 61);
+      x = left;
+      columns.forEach(column => {
+        pdf.text(column.label, x + 2.5, tableTop + 6.4);
+        x += column.width;
+      });
+      pdf.setDrawColor(211, 217, 225);
+      pdf.line(left, tableTop + 10, right, tableTop + 10);
+      y = firstRowY;
+    }
+
+    function newPage() {
+      pdf.addPage();
+      pageHeader();
+    }
+
+    pageHeader();
+
+    ordered.forEach(item => {
+      const cells = columns.map(column =>
+        pdf.splitTextToSize(printable(column.value(item)), column.width - 5));
+      const totalLines = Math.max(...cells.map(lines => lines.length), 1);
+      const fullRowHeight = Math.max(11, 5 + totalLines * lineHeight);
+
+      // Manter cada linha inteira quando ela cabe numa página nova.
+      if (y + fullRowHeight > bottom && fullRowHeight <= bottom - firstRowY) {
+        newPage();
+      }
+
+      let offset = 0;
+      while (offset < totalLines) {
+        if (bottom - y < 11) newPage();
+        const capacity = Math.floor((bottom - y - 5) / lineHeight);
+        if (capacity < 1) {
+          newPage();
+          continue;
+        }
+        const count = Math.min(totalLines - offset, capacity);
+        const rowHeight = Math.max(11, 5 + count * lineHeight);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9.3);
+        pdf.setTextColor(31, 41, 55);
+
+        let x = left;
+        cells.forEach((cellLines, i) => {
+          cellLines.slice(offset, offset + count).forEach((line, j) => {
+            pdf.text(line, x + 2.5, y + 6.3 + j * lineHeight);
+          });
+          x += columns[i].width;
+        });
+
+        y += rowHeight;
+        pdf.setDrawColor(225, 230, 235);
+        pdf.line(left, y, right, y);
+        offset += count;
+        if (offset < totalLines) newPage();
+      }
     });
 
     const totalPaginas = pdf.internal.getNumberOfPages();
     for (let page = 1; page <= totalPaginas; page++) {
       pdf.setPage(page);
-      pdf.setDrawColor(225, 228, 231);
-      pdf.line(left, pageHeight - 14, right, pageHeight - 14);
       pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(8.5);
+      pdf.setFontSize(8);
+      pdf.setTextColor(98, 107, 122);
       pdf.text("Página " + page + " de " + totalPaginas, right, pageHeight - 9, { align: "right" });
     }
 
