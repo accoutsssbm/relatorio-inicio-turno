@@ -96,11 +96,14 @@
       return '<div class="form-group fim-wide"><label>Equipe</label><div class="grid grid-2">' +
         [0,1,2,3,4].map(i=>'<div class="form-group"><label>Integrante '+(i+1)+'</label><input type="text" data-group="'+g+'" data-id="'+htmlEscape(id)+'" data-person="'+i+'" value="'+htmlEscape(equipe[i]||"")+'" placeholder="Nome"></div>').join("")+'</div></div>';
     }
-    const attrs=' data-group="'+g+'" data-id="'+htmlEscape(id)+'" data-field="'+field+'"';
+    // Obrigatoriedade somente para campos realmente presentes no equipamento.
+    // A Previsão Liberação continua livre e opcional.
+    const obrigatorio = ["tag", "ordem", "data", "dataParada", "liberacao"].includes(field);
+    const attrs=' data-group="'+g+'" data-id="'+htmlEscape(id)+'" data-field="'+field+'"'+(obrigatorio?' required':'');
     const content=kind==="area"?
       '<textarea rows="4"'+attrs+' placeholder="Descreva uma atividade por linha">'+htmlEscape(item[field]||"")+'</textarea>':
       '<input type="text"'+attrs+' value="'+htmlEscape(item[field]||"")+'">';
-    return '<div class="form-group '+(kind==="area" || field==="atividades" || field==="falha"?"fim-wide":"")+'"><label>'+htmlEscape(label)+'</label>'+content+'</div>';
+    return '<div class="form-group '+(kind==="area" || field==="atividades" || field==="falha"?"fim-wide":"")+'"><label>'+htmlEscape(label)+(obrigatorio?' <span class="required">*</span>':'')+'</label>'+content+'</div>';
   }
   function renderGroup(group) {
     const host=root.querySelector('[data-list="'+group+'"]');
@@ -315,6 +318,19 @@ function formatarTextoParaWhatsApp(texto) {
       if(item) { item.tipo=e.value;renderGroup("liberados");persist(); }
     }
   });
+  // O fim de turno usa botões fora de um elemento <form>; checar antes de exportar.
+  function validarCamposObrigatoriosFim() {
+    const campos = root.querySelectorAll('[required]');
+    for (const campo of campos) {
+      if (!String(campo.value || '').trim() || !campo.checkValidity()) {
+        campo.focus();
+        campo.reportValidity();
+        alert('Preencha os campos obrigatórios indicados com * antes de exportar ou compartilhar o relatório.');
+        return false;
+      }
+    }
+    return true;
+  }
   root.addEventListener("click",event=>{
     const e=event.target.closest("button");
     if(!e || !root.contains(e)) return;
@@ -328,9 +344,13 @@ function formatarTextoParaWhatsApp(texto) {
       if(confirm("Limpar somente o relatório de fim de turno?")) {state=blankState();refresh();persist();}
     } else if(e.id==="fim-load-sample") {
       if(confirm("Carregar o exemplo do relatório de fim de turno?")) {state=clone(modelo);refresh();persist();}
-    } else if(e.id==="fim-copy-whatsapp") copy();
-    else if(e.id==="fim-download-docx") download();
-    else if(e.id==="fim-print-report") window.print();
+    } else if(e.id==="fim-copy-whatsapp") {
+      if (validarCamposObrigatoriosFim()) copy();
+    } else if(e.id==="fim-download-docx") {
+      if (validarCamposObrigatoriosFim()) download();
+    } else if(e.id==="fim-print-report") {
+      if (validarCamposObrigatoriosFim()) window.print();
+    }
   });
   refresh();
 })();
