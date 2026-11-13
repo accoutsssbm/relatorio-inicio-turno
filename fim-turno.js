@@ -155,7 +155,7 @@
   }
   function formattedText() {
     const out=["Relatório de Final de Turno",
-      "Frota: "+val("frota"),"TURNO: "+val("turma"),"Supervisor: "+val("supervisor"),
+      "Frota: "+val("frota"),"Turno: "+val("turma"),"Supervisor: "+val("supervisor"),
       "Técnico Preventiva: "+val("tecPrev"),"Técnico Corretiva: "+val("tecCorr"),
       "Data: "+val("data"),"",
       "🔵 Preventiva: "+pad(state.qtdPrev),"🟡 Corretiva: "+pad(state.qtdCorr),
@@ -212,7 +212,7 @@ function formatarTextoParaWhatsApp(texto) {
     'Correção da falha:'
   ]);
   const campos = new Set([
-    'Frota', 'TURNO', 'Supervisor', 'Técnico Preventiva',
+    'Frota', 'Turno', 'Supervisor', 'Técnico Preventiva',
     'Técnico Corretiva', 'Data',
     '🔵 Preventiva', '🟡 Corretiva', '🔴 Acidente',
     '🟢 Liberado no Turno', '⚠️Segurança/Meio Ambiente',
