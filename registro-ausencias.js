@@ -126,8 +126,8 @@
   form.addEventListener("submit", event => {
     event.preventDefault();
     const entry = collect();
-    if (!entry.nome || !validDate(entry.data)) {
-      showMessage("Preencha o colaborador e uma data válida.", true);
+    if (!entry.nome || !entry.frota || !validDate(entry.data)) {
+      showMessage("Preencha o colaborador, a Frota e uma data válida.", true);
       return;
     }
     const current = editingId && registros.find(x => x.id === editingId);
